@@ -48,13 +48,13 @@ Shader "Custom/WaterShader"
             {
                 v2f o;
 				float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
-				worldPos.y += sin(worldPos.x * 80 + worldPos.z * 80 + _Time)  * 2;
-				o.rpos.xyz = worldPos.xyz;
-				o.rpos.w = length(WorldSpaceViewDir(v.vertex));
 				float height = tex2Dlod(_UpGlowTexture, float4(v.uv.xy, 0, 0));
 				//worldPos.y += height * 10;
-                o.vertex = mul(UNITY_MATRIX_VP, worldPos) ;
-				o.uv.xy = float2(v.uv.x, v.uv.y) / _UVScale;
+				o.vertex = mul(UNITY_MATRIX_VP, worldPos);
+				o.rpos.xyz = worldPos.xyz;
+				o.rpos.w = length(WorldSpaceViewDir(v.vertex));				
+               
+				o.uv.xy = float2(worldPos.x, worldPos.z) / _UVScale;
 				o.uv.z= _Time.x * 0.1;
 				
                 UNITY_TRANSFER_FOG(o,o.vertex);
