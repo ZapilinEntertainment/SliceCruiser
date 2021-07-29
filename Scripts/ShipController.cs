@@ -5,8 +5,8 @@ using System;
 
 public sealed class ShipController : MonoBehaviour
 {
-    private float maxspeed = GameConstants.MAX_SPEED, accelerationSpeed = 40f, rotatingSpeed = 30f, shipHeight = 5, 
-        maxEnergy = 30f, maxJumpForce = 11f, wallAlignmentCf = 30f;
+    private float maxspeed = GameConstants.MAX_SPEED, accelerationSpeed = 40f, rotatingSpeed = 70f, shipHeight = 5, 
+        maxEnergy = 30f, maxJumpForce = 11f, wallAlignmentCf = 15f;
     [SerializeField] private Vector3 basepoint = Vector3.zero;
     public bool verticalBrakesEffectActive { get; private set; }
     public bool powered { get; private set; }
@@ -17,7 +17,7 @@ public sealed class ShipController : MonoBehaviour
     private float speed = 0f,prevSpeed = 0f, speedMultiplier = 0f, energy, gravity = 0f, jumpForce = 0f;
     private Vector3 localRotationVector = Vector3.zero;
 
-    private const float ROTATION_DAMP = 0.6f, GRAVITY = 9.8f, GROUNDING_HEIGHT = 3f, GROUNDING_SPEED = 10f,
+    private const float ROTATION_DAMP = 0.6f, GRAVITY = 9.8f, GROUNDING_HEIGHT = 3f, GROUNDING_SPEED = 5f,
         JUMP_ENERGY_COST = 2f, JUMP_ACCELERATION = 10f, ENERGY_GAINING_SPEED = 5f, SHIP_ALIGNMENT_SPEED = 3f,
         DISCHARGE_SPEED = 0.3f;
     private int watermask = 255;
@@ -73,11 +73,8 @@ public sealed class ShipController : MonoBehaviour
             if (jumpForce != 0f) endPos += transform.TransformDirection(Vector3.up * jumpForce * t);
 
             RaycastHit rh;
-            Vector3 bpos = transform.TransformPoint(basepoint), mdir = transform.TransformDirection(Vector3.up);
-           
-          
-           
-            
+            Vector3 bpos = transform.TransformPoint(basepoint), mdir = transform.TransformDirection(Vector3.up);          
+                 
             var vects = new Vector2[] { Vector2.zero, new Vector2(2, 4), new Vector2(-2, 4), new Vector2(2, -4), new Vector2(-2, -4) };            
            Vector3 centralCastPoint = bpos + mdir * shipHeight;
            float maxDistance = shipHeight * 2f;
@@ -131,14 +128,16 @@ public sealed class ShipController : MonoBehaviour
                 //var vf = transform.TransformDirection(Vector3.up);
                 //if (rh.normal != vf && speed > 0f) transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.FromToRotation(vf, rh.normal),3f * t);
 
+                // покачивание на волнах:
                 if (!jumping && Physics.Raycast(bpos + mdir * shipHeight, -mdir,
                 out rh, shipHeight * 2f, watermask, QueryTriggerInteraction.Collide))
                 {
                     float a = transform.InverseTransformPoint(rh.point).y - basepoint.y;// + LevelMaster.GetWaveHeight(rh.point.x, rh.point.z);
-                    localRotationVector.x =   Mathf.MoveTowardsAngle(localRotationVector.x, (a > 0f ? -0.3f : 0.3f), Time.deltaTime * 4f);
+                    //localRotationVector.x =   Mathf.MoveTowardsAngle(localRotationVector.x, (a > 0f ? -0.3f : 0.3f), Time.deltaTime * SHIP_ALIGNMENT_SPEED); // 4f
                 }
 
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(Vector3.ProjectOnPlane(transform.forward, rh.normal), rh.normal), wallAlignmentCf * SHIP_ALIGNMENT_SPEED * t);
+
             }
             else
             {
@@ -172,7 +171,7 @@ public sealed class ShipController : MonoBehaviour
                 float x = Mathf.Sin(speed / maxspeed);
                 transform.Rotate(localRotationVector * rotatingSpeed * t * x, Space.Self);
                 
-                a = Mathf.MoveTowards(localRotationVector.x, 0f, gravity * t);
+                a = Mathf.MoveTowards(localRotationVector.x, 0f, 0.3f * t);
                 x = localRotationVector.y;
                 b = Mathf.MoveTowards(x, 0f, ROTATION_DAMP * t);
                 x = localRotationVector.z;
@@ -196,9 +195,17 @@ public sealed class ShipController : MonoBehaviour
             {
                 if (energy != 0) energy = Mathf.Lerp(energy, 0f, DISCHARGE_SPEED * t);
             }
-        }
 
-        
+            if (transform.position.y < GameConstants.LOWEST_HEIGHT) Respawn();
+        }        
+    }
+
+    public void Respawn()
+    {        
+        speed = 0f;
+        localRotationVector = Vector3.zero;
+        speedMultiplier = 0f;
+        if (!RespawnFlower.TrySetRespawnPosition(transform)) gameObject.SetActive(false);
     }
 
     private void OnDrawGizmosSelected()
@@ -220,6 +227,10 @@ public sealed class ShipController : MonoBehaviour
         //if (!grounded)
             localRotationVector += Vector3.forward * f;
     }
+    public void SteerVertical(float f)
+    {
+        localRotationVector -= Vector3.right * f;
+    }
     public void SwitchJumpEngine()
     {
         jumping = !jumping;
@@ -229,9 +240,5 @@ public sealed class ShipController : MonoBehaviour
     {
         GUILayout.Label(localRotationVector.ToString());
         GUILayout.Label(grounded ? "grounded" : "in air");
-        GUILayout.Label(powered ? "powered" : "no power");
-        GUILayout.Label(gravity.ToString());
-        GUILayout.Label(energy.ToString());
-        GUILayout.Label(jumpForce.ToString());
     }
 }

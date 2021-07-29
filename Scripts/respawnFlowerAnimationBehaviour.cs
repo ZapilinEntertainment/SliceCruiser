@@ -13,8 +13,7 @@ public class respawnFlowerAnimationBehaviour : StateMachineBehaviour
     private static string SATURATION_PROPERTY_NAME{get { return "Vector1_CD33CCF9"; }}  
 
     private static void Prepare()
-    {
-        GameMaster.currentSession.SubscribeToSceneClosingEvent(SceneClosing);
+    {        
         closedMaterial = Resources.Load<Material>("Materials/ancientPillar");
         closedMaterial.SetFloat(SATURATION_PROPERTY_NAME, 0f);
         openedMaterial = Resources.Load<Material>("Materials/FlowerMaterial");
@@ -22,11 +21,6 @@ public class respawnFlowerAnimationBehaviour : StateMachineBehaviour
         changingMaterial = new Material(openedMaterial);
         changingMaterial.name = "ChangingMaterial";
         materialsLoaded = true;
-    }
-    private static void SceneClosing()
-    {
-        GameMaster.currentSession?.UnsubscribeFromSceneClosingEvent(SceneClosing);
-        currentAnimatingObject = null;
     }
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)

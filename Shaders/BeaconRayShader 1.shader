@@ -1,9 +1,13 @@
 ﻿Shader "Custom/BeaconRayShader"
 {
+
+	//acceptable only for special cube model
+
 	Properties
-	{
+	{		
 		_MainColor("Main color", Color) = (1,1,1,1)
-		_MaxDistance("Visibility distance", float) = 5000
+		_Intensity("Intensity", float) = 2
+		_MaxDistance("Visibility distance", float) = 10000
 	}
 		SubShader
 	{
@@ -21,8 +25,8 @@
 
 			#include "UnityCG.cginc"
 
-			half4 _MainColor;
-			float _MaxDistance;
+			float4 _MainColor;
+	float _MaxDistance, _Intensity;
 
             struct appdata
             {
@@ -33,6 +37,7 @@
             {
                 float4 vertex : SV_POSITION;
 				float distance : COLOR;
+				float height : TEXCOORD0;
             };
 
 
@@ -40,17 +45,21 @@
             {
                 v2f o;
 				float distance = length(WorldSpaceViewDir(v.vertex));
-                o.vertex = UnityObjectToClipPos(float4(v.vertex.x * (1 + distance / 200), v.vertex.y * (1 + distance / 20000), v.vertex.z, v.vertex.w));
+				o.height = 1 - (v.vertex.y + 0.5); //from - 0.5 to 0.5
+				o.vertex = UnityObjectToClipPos(float4(v.vertex.x * (1 + distance / 200), v.vertex.y * (1 + distance / 20000), v.vertex.z, v.vertex.w));
 				o.distance = distance;
+				
                 return o;
             }
 
             fixed4 frag (v2f i) : SV_Target
             {
-				fixed4 col = _MainColor;
-				//col.a = clamp(1 - i.distance / _MaxDistance, 0, 1);
-			col = (1, 1, 1, 1 - clamp(i.distance / _MaxDistance,0,1) );
-                return col;
+				float4 col = _MainColor;
+				float d = 1 - clamp(i.distance / _MaxDistance, 0, 1);
+				float sh = sin(i.height);
+				float its = _Intensity * d * sh ;
+				col = float4(_MainColor.r * its, _MainColor.g *  its, _MainColor.b * its, d * sh);
+				return col;
             }
             ENDCG
         }

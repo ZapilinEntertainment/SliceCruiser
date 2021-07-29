@@ -13,15 +13,15 @@ public class PlayerInputHandler : MonoBehaviour
         if (inputEnabled && controller != null)
         {
             float t = Time.deltaTime;
-            if (Input.GetKeyDown("w")) controller.ChangeSpeedMultiplier(KEY_FORCE);
+            if (Input.GetKeyDown(KeyCode.W)) controller.ChangeSpeedMultiplier(KEY_FORCE);
             else
             {
-                if (Input.GetKeyDown("s")) controller.ChangeSpeedMultiplier(-KEY_FORCE);
+                if (Input.GetKeyDown(KeyCode.S)) controller.ChangeSpeedMultiplier(-KEY_FORCE);
             }
-            if (Input.GetKey("a")) controller.SteerHorizontal(KEY_FORCE * 4f  * t);
+            if (Input.GetKey(KeyCode.A)) controller.SteerHorizontal(KEY_FORCE * 4f  * t);
             else
             {
-                if (Input.GetKey("d")) controller.SteerHorizontal(-4f * KEY_FORCE  * t);
+                if (Input.GetKey(KeyCode.D)) controller.SteerHorizontal(-4f * KEY_FORCE  * t);
             }
 
             if (Input.GetKeyDown(KeyCode.Space)) controller.SwitchJumpEngine();
@@ -34,6 +34,17 @@ public class PlayerInputHandler : MonoBehaviour
             else
             {
                 if (Input.GetKey(KeyCode.E)) controller.RotateShip(-KEY_FORCE * t * 4);
+            }
+
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                controller.Respawn();
+            }
+
+            if (Input.GetKey(KeyCode.Z)) controller.SteerVertical(KEY_FORCE * t);
+            else
+            {
+                if (Input.GetKey(KeyCode.C)) controller.SteerVertical(-1f * KEY_FORCE * t);
             }
         }
     }

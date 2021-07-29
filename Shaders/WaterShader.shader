@@ -1,4 +1,5 @@
 ﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+// hey look https://catlikecoding.com/unity/tutorials/flow/texture-distortion/
 
 Shader "Custom/WaterShader"
 {
@@ -10,6 +11,9 @@ Shader "Custom/WaterShader"
 		_SecondaryColor("Secondary color", Color) = (0,0,0,0)
 		_WaveMask("Wave mask", 2D) = "white" {}
 		_UVScale("UV Scale", float) = 1
+		_LightVal("Lightnings value", Range(0.01,1)) = 0.8
+		_LightPower("Light power", float) = 100
+		_DarkVal("Darkening", Range(0.01,1)) = 0.8
     }
     SubShader
     {
@@ -40,7 +44,7 @@ Shader "Custom/WaterShader"
 				float3 uv : TEXCOORD0;
             };
 
-			half _UVScale;
+			half _UVScale, _LightVal, _DarkVal, _LightPower;
 			sampler2D _DeepGlowTexture, _UpGlowTexture, _WaveMask;
 			half4 _MainColor, _SecondaryColor;
 
@@ -65,13 +69,23 @@ Shader "Custom/WaterShader"
             {
 				float time = i.uv.z;
 				float waveVal = tex2D(_WaveMask, float2(i.uv.x,i.uv.y + time * 6));
-				float x = tex2D(_UpGlowTexture, float2(i.uv.x + time * 0.3, i.uv.y - time * 0.25)).rgb;
+				float x = tex2D(_UpGlowTexture, float2(i.uv.x + time * 0.3 , i.uv.y - time * 0.25)).rgb;
                 float y = tex2D(_DeepGlowTexture, float2(i.uv.x + time + sin(time) , i.uv.y + time)) ;
 				
 				
-				fixed4 col = lerp(fixed4(lerp(_SecondaryColor.rgb, _MainColor.rgb, y * x).rgb,0), 1, waveVal * x);
+				float4 col = lerp(fixed4(lerp(_SecondaryColor.rgb, _MainColor.rgb, y * x).rgb,0), 1, waveVal * x);
                 
 				col = (0.55 + y) * _SecondaryColor + x * _MainColor * 0.3 + waveVal * x * y * x * _MainColor;
+				// color corrections
+				// - lightening:
+				col.rgb += clamp(col.rgb - _LightVal, 0, 1) * _LightPower;
+				// - darkening:
+				float sr = length(col);
+				float ld = clamp(col.g / _DarkVal,0,1);
+				ld -= 1;
+				ld *= -1;
+				col.rgb = lerp (col.rgb, _SecondaryColor, ld);
+				
 				// apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
