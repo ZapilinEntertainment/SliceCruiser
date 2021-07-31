@@ -7,10 +7,12 @@ public class UIController : MonoBehaviour
 {
     [SerializeField] private Image powerBar;
     [SerializeField] private RawImage powerIcon;
-    private bool linkReady = false, showEnergyIcon = false, powerIconAnimationInProgress = false;
+    [SerializeField] private Text adviceText;
+    private bool linkReady = false, showEnergyIcon = false, powerIconAnimationInProgress = false, showNormalAdvice;
     private float powerIconAnimationAlpha = 1f;
     private ShipController shipController;
     private const float POWER_ICON_ANIMATION_SPEED = 2f;
+    private readonly string normalAdvice = "use WASD to control /nHold SPACE to jump", jumpAdvice = "use QE for pitch,\n ZC for roll,\n R for respawn";
 
     private void Start()
     {
@@ -43,6 +45,12 @@ public class UIController : MonoBehaviour
                     if (powerIconAnimationAlpha == 0f) powerIconAnimationInProgress = false;
                 }
                 powerIcon.color = new Color(1f, 1f, 1f, powerIconAnimationAlpha);
+            }
+            //
+            if (showNormalAdvice != shipController.grounded)
+            {
+                showNormalAdvice = shipController.grounded;
+                adviceText.text = showNormalAdvice ? normalAdvice : jumpAdvice;
             }
         }
     }

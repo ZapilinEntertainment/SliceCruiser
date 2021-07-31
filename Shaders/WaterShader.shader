@@ -53,7 +53,7 @@ Shader "Custom/WaterShader"
                 v2f o;
 				float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
 				float height = tex2Dlod(_UpGlowTexture, float4(v.uv.xy, 0, 0));
-				//worldPos.y += height * 10;
+				//worldPos.y += height * 1.5;
 				o.vertex = mul(UNITY_MATRIX_VP, worldPos);
 				o.rpos.xyz = worldPos.xyz;
 				o.rpos.w = length(WorldSpaceViewDir(v.vertex));				

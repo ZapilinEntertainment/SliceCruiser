@@ -9,11 +9,12 @@ public sealed class ShipController : MonoBehaviour
         maxEnergy = 30f, maxJumpForce = 11f, wallAlignmentCf = 15f;
     [SerializeField] private Vector3 basepoint = Vector3.zero;
     public bool verticalBrakesEffectActive { get; private set; }
+    public bool grounded { get; private set; }
     public bool powered { get; private set; }
     public float energyPercent { get { if (maxEnergy != 0f) return energy / maxEnergy; else return 1f; } }
     public Action<float> speedChangedEvent;
 
-    private bool jumping = false, grounded = true;
+    private bool jumping = false;
     private float speed = 0f,prevSpeed = 0f, speedMultiplier = 0f, energy, gravity = 0f, jumpForce = 0f;
     private Vector3 localRotationVector = Vector3.zero;
 
@@ -28,6 +29,7 @@ public sealed class ShipController : MonoBehaviour
         energy = maxEnergy;
         verticalBrakesEffectActive = false;
         jumping = false;
+        grounded = true;
 
         RaycastHit rh;
         Vector3 bpos = transform.TransformPoint(basepoint), mdir = transform.TransformDirection(Vector3.up);
@@ -175,7 +177,7 @@ public sealed class ShipController : MonoBehaviour
                 x = localRotationVector.y;
                 b = Mathf.MoveTowards(x, 0f, ROTATION_DAMP * t);
                 x = localRotationVector.z;
-                c = Mathf.MoveTowards(x, 0f, ROTATION_DAMP/4f * t);
+                c = Mathf.MoveTowards(x, 0f, ROTATION_DAMP/2f * t);
                 localRotationVector = new Vector3(a, b, c);
             }
             speed = Mathf.MoveTowards(speed, maxspeed * speedMultiplier, accelerationSpeed * t);

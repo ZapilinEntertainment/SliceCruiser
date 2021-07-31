@@ -15,6 +15,8 @@ public sealed class CameraController : MonoBehaviour
         Cursor.visible = false;
         camTransform.localPosition = Vector3.zero; zoomVal = 0f;
         orbiter.localPosition = cameraLocalPosition;
+        transform.position = target.position;
+        transform.rotation = Quaternion.LookRotation(target.forward, Vector3.up);
     }
 
     // Update is called once per frame

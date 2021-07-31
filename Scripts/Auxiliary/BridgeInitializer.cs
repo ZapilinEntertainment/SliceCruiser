@@ -25,7 +25,7 @@ public class BridgeInitializer : MonoBehaviour
                 bendUp = Vector3.Lerp(t1.up, t2.up, x);
                 bendPoint += (Quaternion.AngleAxis(Random.value * 360f, bendFwd) * bendUp) * (distance * (Random.value * 0.8f + 0.2f) * maxRough);
 
-                BridgeConstructor.CreateBridge(new RoadPoint(t1), new RoadPoint(bendPoint,bendUp, bendFwd), new RoadPoint(t2), transform, width);
+                BridgeConstructor.CreateBridge(new RoadPoint(t1),bendPoint, new RoadPoint(t2), transform, width);
             }
         }
         
